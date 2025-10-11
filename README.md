@@ -6,7 +6,7 @@ Pas facile de compter sur l'IA ou sur soit-même pour assurer la CAP en A-10 ou 
 Ce script permet, en plaçant des marqueur sur la carte F-10 et en les nomant d'une certaine façon de placer des unités de différents types.
 Pratique pour créer des petits scénarios à la volée.  
 
-Téléchagement    
+Téléchargement    
 ------
 https://github.com/Queton1-1/DCS-Spawn-On-Marker/releases
   
