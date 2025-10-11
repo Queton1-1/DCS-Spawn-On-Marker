@@ -1,4 +1,4 @@
-# DCS SPAWN ON MAKER
+# DCS SPAWN ON MARKER
 [Update 2025-10]  
   
 Un beau petit script, principalement à destination des joueurs qui jouent solo ou en petit groupe.
