@@ -1,5 +1,5 @@
 # DCS-SOM
-[Update 2025-04]  
+[Update 2025-10]  
   
 Un beau petit script, principalement à destination des joueurs qui jouent solo ou en petit groupe.
 Pas facile de compter sur l'IA ou sur soit-même pour assurer la CAP en A-10 ou en Su-25T.
