@@ -34,4 +34,7 @@ UTILISATION
 Rien de plus simple.
 Si le script est bien chargé, en placant un marqueur nommé suivant la commande que vous recherchez, un message va s'afficher et l'action se délencher.
 
-/!\ Les commandes sont dans deux images jointes.
+![_SOM Help_01](https://github.com/user-attachments/assets/14f088ae-f719-489d-9245-8a6b7528921e)
+![_SOM Help_02](https://github.com/user-attachments/assets/754de5d3-9fb1-4d5e-8222-fc16a9d135d9)
+
+
