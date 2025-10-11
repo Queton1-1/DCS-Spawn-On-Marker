@@ -8,7 +8,7 @@ Pratique pour créer des petits scénarios à la volée.
 TELECHARGEMENT  
 ------
 https://github.com/Queton1-1/DCS-Spawn-On-Marker/releases
-
+  
 FONCTIONNALITES
 ------
 Ce script permet, en plaçant des marqueur sur la carte F-10 et en les nomant d'une certaine façon d'accéder à des patrouilles
