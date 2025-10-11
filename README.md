@@ -1,5 +1,6 @@
 # DCS-SOM
 [Update 2025-04]  
+  
 Un beau petit script, principalement à destination des joueurs qui jouent solo ou en petit groupe.
 Pas facile de compter sur l'IA ou sur soit-même pour assurer la CAP en A-10 ou en Su-25T.
 Ce script permet, en plaçant des marqueur sur la carte F-10 et en les nomant d'une certaine façon de placer des unités de différents types.
