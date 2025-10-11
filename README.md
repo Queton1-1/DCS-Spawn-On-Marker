@@ -1,4 +1,4 @@
-# DCS-SOM
+# DCS SPAWN ON MAKER
 [Update 2025-10]  
   
 Un beau petit script, principalement à destination des joueurs qui jouent solo ou en petit groupe.
