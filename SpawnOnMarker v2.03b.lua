@@ -9,6 +9,15 @@
 
 --%%% CHANGELOG %%%
 --[[
+    2.03b
+    - correct _data > spawnDatas
+    - add ClearMessages()
+
+    2.03a
+    - Adjust presets parameters
+    - add vehicles
+    - Correct in SpawnMe() : add _data.frequency for Ground Units ; return _data nor _groupName
+
     2.02
     - add custom heading
     - mod units names with num <9
@@ -61,17 +70,19 @@ local Floor = math.floor
 local AddGroup=coalition.addGroup
 local Explode=trigger.action.explosion
 local ScheduleFunction=timer.scheduleFunction
-local StrSub=string.sub
-local Floor=math.floor
 local Sin=math.sin
 local Cos=math.cos
 local ToNumber=tonumber
 
 local function Ran(a,b)
-    local t=StrSub(math.random(os.time()*os.time()),-2,-1)
+    local z=StrSub(math.random(os.time()*os.time()),-2,-1)
+    local t=tonumber(z)
     t=(t*(b-a)/100)+a
     t=Floor(t+0.5)
     return t
+end
+local function ClearMsg()
+    Msg("",1,true)
 end
 local function TextParser(s)
     local r={}
@@ -120,15 +131,15 @@ local function TextParser(s)
     return r
 end
 local function BraaFromText(braa)
-    local _braa={}
+    local datas={}
     for i=1,4 do
         if StrMatch(braa,"b"..i..".[0-9][0-9]") and StrMatch(braa,"r"..i..".[0-9][0-9]") then
-            _braa[i]={}
-            _braa[i].bearing=ToNumber(StrMatch(braa,"b"..i..".([0-9][0-9][0-9])"))
-            _braa[i].range=(ToNumber(StrMatch(braa,"r"..i..".([0-9][0-9][0-9])")))
+            datas[i]={}
+            datas[i].bearing=ToNumber(StrMatch(braa,"b"..i..".([0-9][0-9][0-9])"))
+            datas[i].range=(ToNumber(StrMatch(braa,"r"..i..".([0-9][0-9][0-9])")))
         end
     end
-    return _braa
+    return datas
 end
 --> Some ammunitions
     local loadout={
@@ -8008,10 +8019,11 @@ local function SpawnMe(data)
                 for i=1, #data.wpt do
                     if data.wpt[i].x and data.wpt[i].y then
                         local _alt,_speed
-                        local _wptName=data.wpt[i].name or "Waypoint "..i
+                        local _w="Waypoint "..i
+                        local _wptName=data.wpt[i].name or _w
                         local _wptTasks=data.wpt[i].tasks or nil
                         if data.objectSubCategory=="AIRPLANE" then
-                            if data.wpt[i].alt~=nil then _alt=data.wpt[i].alt*0,3048 else _alt=_initialAlt end
+                            if data.wpt[i].alt~=nil then _alt=data.wpt[i].alt*0.3048 else _alt=_initialAlt end
                             if data.wpt[i].speed~=nil then _speed=data.wpt[i].speed*0.514 else _speed=_initialSpeed end
                         elseif data.objectSubCategory=="SHIP" then
                             _alt=0
@@ -8162,6 +8174,7 @@ local function SpawnMe(data)
                     ["taskSelected"]=true,
                     ["tasks"]={},
                     ["start_time"]=0,
+                    ["frequency"]=_freq,
                 }
                 AddGroup(_coalition, Group.Category.GROUND, _data)
                 Log("SOM 2.0 | Unit ".._data.units[1].type.." spawned")
@@ -8444,27 +8457,39 @@ local function SpawnMe(data)
                 {farp = newFarp, context = warehouse},timer.getTime() + 5
             )
         end
-        return _groupName
+    --> Return
+        return _data
     end
 end
 local radio={ag=288,aa=280,h=225.1,unicom=122.80,guard=243,p2p=123.45}
 local presets={
     --> GROUND
-        groundRecon={immortal=false, invisible=true, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="hold", dispersion=60, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
-        infantery={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=60, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
-        jtac={immortal=false, invisible=true, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=0, alert="red", engage=100, hold=false, jtac=true, jtacCallname=12, tacan=false},
-        transport={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=120, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
-        mbt={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=120, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
-        arty={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=300, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+        groundRecon={immortal=false, invisible=true, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="hold", dispersion=60, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+
+        infantery={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=10, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+
+        jtacMan={immortal=false, invisible=true, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=0, alert="auto", engage=100, hold=false, jtac=true, jtacCallname=MathRan(1,19), tacan=false},
+
+        jtacPlayer={immortal=false, invisible=true, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=0, alert="auto", engage=100, hold=false, jtac=true, jtacCallname=MathRan(1,19), tacan=false},
+
+        transport={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=120, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+
+        mbt={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=120, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+
+        arty={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=300, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+
         aaa={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=300, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+
         mobileSam={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=300, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+
         sam={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="free", dispersion=0, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
-        tacan={immortal=false, invisible=true, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="hold", dispersion=0, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=true, tacanChannel=126, tacanMode="X", tacanFreq=tacanFX[126], tacanCallsign="OTC"},
+
+        tacan={immortal=false, invisible=true, hidden=false, uncontrollable=false, freq=radio.ag, datalink=true, roe="hold", dispersion=0, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=true, tacanChannel=126, tacanMode="X", tacanFreq=tacanFX[126], tacanCallsign="OTC"},
     --> NAVAL
-        shipHeli={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.h, datalink=false, roe="free", dispersion=600, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
-        ship2={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.guard, datalink=false, roe="free", dispersion=600, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
-        carrier={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.h, datalink=true, roe="free", dispersion=600, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=true, tacanChannel=80, tacanMode="X", tacanFreq=1167000000, tacanCallsign="SCA"},
-        alliedShip={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.h, datalink=true, roe="free", dispersion=600, alert="red", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+        shipHeli={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.h, datalink=false, roe="free", dispersion=600, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+        ship2={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.guard, datalink=false, roe="free", dispersion=600, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
+        carrier={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.h, datalink=true, roe="free", dispersion=600, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=true, tacanChannel=80, tacanMode="X", tacanFreq=1167000000, tacanCallsign="SCA"},
+        alliedShip={immortal=false, invisible=false, hidden=false, uncontrollable=false, freq=radio.h, datalink=true, roe="free", dispersion=600, alert="auto", engage=100, hold=false, jtac=false, jtacCallname=nil, tacan=false},
     --> AIRPLANE
         cap={invisible=false, immortal=false, uncontrollable=false, hiden=false, freq=radio.aa, datalink=true, unlimitedFuel=false, roe="free", threatReaction="evade", radarUse="for search",flareUse="on shoot", rtbOnBingo=false, rtbOutOfAmmo=4294967295, jammerUse="if locked", noAA=false, noJetisson=false, noAfterburner=true, noAG=true, missileStrategy="threat level", noWptReport=true, jetissonEmptyTank=false},
 
@@ -8487,22 +8512,23 @@ local presets={
         static={}
 }
 local spawnTable={
+        --{keyword="som mobile tacan", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="TACAN_beacon"}}, options=presets.tacan},
     --> FAC
         {keyword="som rover", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="Land_Rover_109_S3"}}, options=presets.groundRecon},
         {keyword="som jeep", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="Willys_MB"}}, options=presets.groundRecon},
         {keyword="som vw", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="Kubelwagen_82"}}, options=presets.groundRecon},
-        --{keyword="som mobile tacan", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="TACAN_beacon"}}, options=presets.tacan},
+        {keyword="som hummer", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="Hummer"}}, options=presets.jtacPlayer},
     --> INF
         {keyword="som manpad", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="SA-18 Igla-S manpad"}}, options=presets.infantery},
         {keyword="som stinger", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="Soldier stinger"}}, options=presets.infantery},
-        {keyword="som jtac", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="Soldier M4"}}, options=presets.jtac},
+        {keyword="som jtac", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="Soldier M4"}}, options=presets.jtacMan},
+        {keyword="som troups", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="Soldier M4"},{type="Soldier M4"},{type="Soldier M4"},{type="Soldier M4"},{type="Soldier M4"},{type="Soldier RPG"},{type="Soldier M4"},{type="Soldier RPG"},}, options=presets.infantery},
     --> TRUCK
         {keyword="som truck us", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="M 818"}}, options=presets.transport},
         {keyword="som truck ru", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="KrAZ6322"}}, options=presets.transport},
         {keyword="som bus", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="LAZ Bus"}}, options=presets.transport},
         {keyword="som fuel ru", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="ATZ-5"}}, options=presets.transport},
         {keyword="som fuel us", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="r11_volvo_drivable"}}, options=presets.transport},
-        
     --> MBT
         {keyword="som leclerc", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="Leclerc"}}, options=presets.mbt},
         {keyword="som abrams", objectCategory="UNIT", objectSubCategory="GROUND_UNIT", units={{type="M-1 Abrams"}}, options=presets.mbt},
@@ -8589,7 +8615,7 @@ local spawnTable={
             [5] = {["CLSID"] = "{F1243568-8EF0-49D4-9CB5-4DA90D92BC1D}",},
             [6] = {["CLSID"] = "{4EDBA993-2E34-444C-95FB-549300BF7CAF}",},},["fuel"] = "15500",["flare"] = 0,["chaff"] = 0,["gun"] = 100,}}, options=presets.cap},
 
-        {keyword="som cap mig29a", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="CAP", units={{type="MiG-29A",skill="HIGH",["pylons"] = {
+        {keyword="som cap mig29a", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="CAP", units={{type="MiG-29A",skill="HIGH",["pylons"] ={
             [1] = loadout.fox2.R60M,
             [2] = loadout.fox2.R60M,
             [3] = loadout.fox1.R27R,
@@ -8597,7 +8623,6 @@ local spawnTable={
             [5] = loadout.fox1.R27R,
             [6] = loadout.fox2.R60M,
             [7] = loadout.fox2.R60M,},["fuel"] = "3376",["flare"] = 30,["chaff"] = 30,["gun"] = 100,}}, options=presets.cap},
-
         {keyword="som cap mig29s", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="CAP", units={{type="MiG-29S",skill="HIGH",["pylons"] = {
             [1] = loadout.fox2.R73,
             [2] = loadout.fox3.R77,
@@ -8606,7 +8631,6 @@ local spawnTable={
             [5] = loadout.fox1.R27R,
             [6] = loadout.fox3.R77,
             [7] = loadout.fox2.R73,},["fuel"] = "3376",["flare"] = 30,["chaff"] = 30,["gun"] = 100,}}, options=presets.cap},
-
         {keyword="som cap su27", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="CAP", units={{type="Su-27",skill="HIGH",["pylons"]={
             [1] = loadout.pod.SU27_POD_ECM_R,
             [2] = loadout.fox2.R73,
@@ -8616,14 +8640,12 @@ local spawnTable={
             [8] = loadout.fox1.R27ER,
             [9] = loadout.fox2.R73,
             [10] = loadout.pod.SU27_POD_ECM_L,},["fuel"] = 5590.18,["flare"] = 96,["chaff"] = 96,["gun"] = 100,}}, options=presets.cap},
-
         {keyword="som cap f1eq", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="CAP", units={{type="Mirage-F1EQ",skill="HIGH",["pylons"] = {
             [1] = loadout.fox2.MAGIC1,
             [3] = loadout.fox1.S530F,
             [4] = loadout.tank.F1_TANK_C_1200,
             [5] = loadout.fox1.S530F,
             [7] = loadout.fox2.MAGIC1,},["fuel"] = 3356,["flare"] = 0,["chaff"] = 0,["gun"] = 100,}}, options=presets.cap},
-
         {keyword="som cap f16", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="CAP", units={{type="F-16C_50",skill="HIGH",["pylons"] ={
             [1]=loadout.fox3.AIM120C,
             [2]=loadout.fox3.AIM120C,
@@ -8634,7 +8656,6 @@ local spawnTable={
             [7]=loadout.fox2.AIM9X,
             [8]=loadout.fox3.AIM120C,
             [9]=loadout.fox3.AIM120C,},["fuel"] = 3249,["flare"] = 60,["ammo_type"] = 5,["chaff"] = 60,["gun"] = 100,}}, options=presets.cap},
-
         {keyword="som sead f16", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="SEAD", units={{type="F-16C_50",skill="HIGH",["pylons"]={
             [1]=loadout.fox2.AIM9X,
             [2]=loadout.clean,
@@ -8647,7 +8668,6 @@ local spawnTable={
             [9]=loadout.fox2.AIM9X,
             [10]=loadout.pod.F16C_POD_HTS,
             [11]=loadout.pod.F16C_POD_TGP,},["fuel"] = 3249,["flare"] = 60,["ammo_type"] = 5,["chaff"] = 60,["gun"] = 100,}}, options=presets.sead},
-
         {keyword="som cap fa18", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="CAP", units={{type="FA-18C_hornet",skill="HIGH",["pylons"] ={
             [1]=loadout.fox2.AIM9X,
             [2]=loadout.fox3.FA18_AIM120B_X2,
@@ -8658,7 +8678,6 @@ local spawnTable={
             [7]=loadout.tank.FA18C_TANK,
             [8]=loadout.fox3.FA18_AIM120B_X2,
             [9]=loadout.fox2.AIM9X,},["fuel"] = 4900,["flare"] = 60,["ammo_type"] = 5,["chaff"] = 60,["gun"] = 100,}}, options=presets.cap},
-
         {keyword="som sead fa18", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="SEAD", units={{type="FA-18C_hornet",skill="HIGH",["pylons"]={
             [1]=loadout.fox2.AIM9X,
             [2]=loadout.sead.AGM88C,
@@ -8669,7 +8688,6 @@ local spawnTable={
             [7]=loadout.sead.AGM88C,
             [8]=loadout.sead.AGM88C,
             [9]=loadout.fox2.AIM9X,},["fuel"] = 4900,["flare"] = 60,["ammo_type"] = 5,["chaff"] = 60,["gun"] = 100,}}, options=presets.sead},
-
         {keyword="som cap jf17", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="CAP", units={{type="JF-17",skill="HIGH",["pylons"]={
             [1]={["CLSID"] = "DIS_PL-5EII",},
             [2]={["CLSID"] = "DIS_SD-10_DUAL_L",},
@@ -8678,7 +8696,6 @@ local spawnTable={
             [5]={["CLSID"] = "DIS_TANK800",},
             [6]={["CLSID"] = "DIS_SD-10_DUAL_R",},
             [7]={["CLSID"] = "DIS_PL-5EII",},},["fuel"] = 2325,["flare"] = 32,["chaff"] = 36,["gun"] = 100,}}, options=presets.cap},
-
         {keyword="som sead jf17", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="SEAD", units={{type="JF-17",skill="HIGH",["pylons"]={
             [1]={["CLSID"] = "DIS_PL-5EII",},
             [2]={["CLSID"] = "DIS_LD-10_DUAL_L",},
@@ -8687,7 +8704,6 @@ local spawnTable={
             [5]={["CLSID"] = "DIS_TANK800",},
             [6]={["CLSID"] = "DIS_LD-10_DUAL_R",},
             [7]={["CLSID"] = "DIS_PL-5EII",},},["fuel"] = 2325,["flare"] = 32,["chaff"] = 36,["gun"] = 100,}}, options=presets.sead},
-
         {keyword="som il76", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission=nil, units={{type="IL-76MD",skill="EXCELLENT",["pylons"] = {},["fuel"] = 80000,["flare"] = 96,["chaff"] = 96,["gun"] = 100,}}, options=presets.transport},
         {keyword="som fa18", objectCategory="UNIT", objectSubCategory="AIRPLANE", mission="CAP", units={{type="FA-18C_hornet",skill="AVERAGE",["pylons"] ={
             [1]=loadout.fox2.AIM9X,
@@ -8705,8 +8721,10 @@ local spawnTable={
 
     --> STATICS
         {keyword="som techcombine", objectCategory="STATIC", units={{type="Tech combine",category=4, shape="kombinat"}},options=nil},
-        {keyword="som factory", objectCategory="STATIC", units={{type="Workshop A",category=4, shape="tec_a"}},options=nil},
-        {keyword="som workshop", objectCategory="STATIC", units={{type="Building04_PBR",category=4, shape="M92_Building04_PBR"}},options=nil},
+        {keyword="som workshop", objectCategory="STATIC", units={{type="Workshop A",category=4, shape="tec_a"}},options=nil},
+        {keyword="som plantsmall", objectCategory="STATIC", units={{type="Building02_PBR",category=4, shape="M92_Building02_PBR"}},options=nil},
+        {keyword="som plantlarge", objectCategory="STATIC", units={{type="Building03_PBR",category=4, shape="M92_Building03_PBR"}},options=nil},
+        {keyword="som plantmedium", objectCategory="STATIC", units={{type="Building04_PBR",category=4, shape="M92_Building04_PBR"}},options=nil},
         {keyword="som warehouse", objectCategory="STATIC", units={{type="Warehouse",category=4, shape="sklad"}},options=nil},
         {keyword="som windsock", objectCategory="STATIC", units={{type="Windsock",category=4, shape="H-Windsock_RW"}},options=nil},
         {keyword="som farpammo", objectCategory="STATIC", units={{type="FARP Ammo Dump Coating",category=4, shape="SetkaKP"}},options=nil},
@@ -8714,6 +8732,7 @@ local spawnTable={
         {keyword="som farptent", objectCategory="STATIC", units={{type="FARP Tent",category=4, shape="PalatkaB"}},options=nil},
         {keyword="som farpcp", objectCategory="STATIC", units={{type="FARP CP Blindage",category=4, shape="kp_ug"}},options=nil},
         {keyword="som skyramp", objectCategory="STATIC", units={{type="Ski Ramp",category=4, shape="SkiRamp_01"}},options=nil},
+        {keyword="som building", objectCategory="STATIC", units={{type="af_hq",category="Fortifications", shape="syr_af_hq"}},options=nil},
     --> BASE
         {keyword="som farpsingle", objectCategory="BASE", units={{type="FARP_SINGLE_01",category="Heliports", shape="FARP_SINGLE_01"}},options=nil},
         {keyword="som farpinvisible", objectCategory="BASE", units={{type="Invisible FARP",category="Heliports", shape="invisiblefarp"}},options=nil},
@@ -8721,15 +8740,14 @@ local spawnTable={
 }
 local SOM={event={}}
 function SOM.event:onEvent(event)
-    if world.event.S_EVENT_MARK_CHANGE == event.id and event.coalition ~= 0 then
+    if world.event.S_EVENT_MARK_REMOVED == event.id and event.coalition ~= 0 then
     --> B*
         if (StrMatch(event.text, "&²b")) then
-            function SOM.Boom()
-                local s=StrMatch(event.text, "[0-9][0-9][0-9][0-9]")
-                if not s then s=25 elseif s<="0020" then s=25 else s=ToNumber(s) end
+            ScheduleFunction(function()
+                local s=StrMatch(event.text, "[0-9][0-9][0-9]")
+                if not s then s=25 elseif s<="020" then s=25 else s=ToNumber(s) end
                 Explode({x=event.pos.x, y=event.pos.y, z=event.pos.z},s)
-            end
-            ScheduleFunction(SOM.Boom, nil, timer.getTime() + 3 )
+            end, nil, timer.getTime() + 5 )
     --> Remove SOM group
         elseif (StrMatch(event.text, "som remove")) then
             local s
@@ -8759,14 +8777,22 @@ function SOM.event:onEvent(event)
     --> Light
         elseif (StrMatch(event.text, "som light")) then
             trigger.action.illuminationBomb({x=event.pos.x,y=event.pos.y,z=event.pos.z+100},1000000)
+            Msg("SOM 2.0 | New illumination bomb")
+            Log("SOM 2.0 | New illumination bomb")
     --> Smoke
         elseif (StrMatch(event.text, "som smoke")) then
             trigger.action.smoke({x=event.pos.x,y=event.pos.y,z=event.pos.z},2)
+            Msg("SOM 2.0 | New smoke")
+            Log("SOM 2.0 | New smoke")
+    --> Clean Messages
+        elseif (StrMatch(event.text, "som clearmsg")) then
+            ClearMsg()
+            Log("SOM 2.0 | Clear messages")
         end
     --> Units
         for i=1, #spawnTable do
             if StrMatch(event.text,spawnTable[i].keyword) then
-                local _data={
+                local markDatas={
                     groupName="SOM #"..MathRan(100000,999999),
                     coalition=TextParser(event.text).coalition,
                     wpt={},
@@ -8788,7 +8814,7 @@ function SOM.event:onEvent(event)
                     skill=TextParser(event.text).skill,
                     braa=BraaFromText(event.text),
                 }
-                local sp=SpawnMe(_data)
+                local sp=SpawnMe(markDatas)
                 if not somSpawned then somSpawned={} end
                 somSpawned[#somSpawned+1]=sp
             end
