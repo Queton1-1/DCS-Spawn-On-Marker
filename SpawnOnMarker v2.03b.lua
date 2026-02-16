@@ -9,6 +9,9 @@
 
 --%%% CHANGELOG %%%
 --[[
+    2.03c
+    - suppress Ran(), math.ran seems to work now.
+
     2.03b
     - correct _data > spawnDatas
     - add ClearMessages()
@@ -74,13 +77,6 @@ local Sin=math.sin
 local Cos=math.cos
 local ToNumber=tonumber
 
-local function Ran(a,b)
-    local z=StrSub(math.random(os.time()*os.time()),-2,-1)
-    local t=tonumber(z)
-    t=(t*(b-a)/100)+a
-    t=Floor(t+0.5)
-    return t
-end
 local function ClearMsg()
     Msg("",1,true)
 end
@@ -7667,8 +7663,8 @@ local function SpawnMe(data)
             _coalition=country.id.CJTF_BLUE
         end
     --> Init group Id and group heading
-        local _groupId=Ran(10000,99999)
-        local _heading=data.heading or Ran(0,359)
+        local _groupId=MathRan(10000,99999)
+        local _heading=data.heading or MathRan(0,359)
     --> Radio frequency
             local _freq
             if data.freq then
@@ -7782,7 +7778,7 @@ local function SpawnMe(data)
                     --> HOLD POSITION
                     {enabled=_hold,auto=false,id="Hold",params={templateId="defaut"}},
                     --> FAC/JTAC
-                    {enabled=_jtac,auto=false,id="FAC",params={number=Ran(1,9),designation="Auto",modulation=0,callname=_jtacCallname,datalink=true,frequency=_freq}},
+                    {enabled=_jtac,auto=false,id="FAC",params={number=MathRan(1,9),designation="Auto",modulation=0,callname=_jtacCallname,datalink=true,frequency=_freq}},
                     --> RADIO FREQUENCY
                     {enabled=true,auto=false,id="WrappedAction",params={action={id="SetFrequency",params={power=15,modulation=0,frequency=_freq}}}},
                 }
@@ -7976,14 +7972,14 @@ local function SpawnMe(data)
                 _y=data.y or 0
             end
             if not data.alt and data.objectSubCategory=="AIRPLANE" then 
-                _initialAlt=Ran(_aircraftAltMin,_aircraftAltMax) 
+                _initialAlt=MathRan(_aircraftAltMin,_aircraftAltMax) 
             elseif data.alt and data.objectSubCategory=="AIRPLANE" then
                 _initialAlt=data.alt*0.3048
             else
                 _initialAlt=land.getHeight({x=_x,z=_y})
             end
             if not data.speed and data.objectSubCategory=="AIRPLANE" then
-                _initialSpeed=Ran(_aircraftSpeedMin,_aircraftSpeedMax)
+                _initialSpeed=MathRan(_aircraftSpeedMin,_aircraftSpeedMax)
             elseif data.speed and data.objectSubCategory=="AIRPLANE" then
                 _initialSpeed=data.speed*0.514
             else
@@ -8027,10 +8023,10 @@ local function SpawnMe(data)
                             if data.wpt[i].speed~=nil then _speed=data.wpt[i].speed*0.514 else _speed=_initialSpeed end
                         elseif data.objectSubCategory=="SHIP" then
                             _alt=0
-                            if data.wpt[i].speed~=nil then _speed=data.wpt[i].speed*0.514 else _speed=Ran(_shipSpeedMin,_shipSpeedMax) end
+                            if data.wpt[i].speed~=nil then _speed=data.wpt[i].speed*0.514 else _speed=MathRan(_shipSpeedMin,_shipSpeedMax) end
                         else
                             _alt=0
-                            if data.wpt[i].speed~=nil then _speed=data.wpt[i].speed*0.514 else _speed=Ran(_groundSpeedMin,_groundSpeedMax) end
+                            if data.wpt[i].speed~=nil then _speed=data.wpt[i].speed*0.514 else _speed=MathRan(_groundSpeedMin,_groundSpeedMax) end
                         end
                         _wpt[#_wpt+1]= {
                             ["name"]=_wptName,
@@ -8147,8 +8143,8 @@ local function SpawnMe(data)
                             ["coldAtStart"]=_coldAtStart,
                             ["type"]=_type,
                             ["unitId"]=#_units+1,
-                            ["x"]=data.units[i].x or _wpt[1].x + (#_units)*Ran(-15,15),
-                            ["y"]=data.units[i].y or _wpt[1].y + (#_units)*Ran(-15,15),
+                            ["x"]=data.units[i].x or _wpt[1].x + (#_units)*MathRan(-15,15),
+                            ["y"]=data.units[i].y or _wpt[1].y + (#_units)*MathRan(-15,15),
                             ["name"]=_unitName,
                             ["heading"]=data.units[i].heading or _heading*math.pi/180,
                             ["playerCanDrive"]=true,
@@ -8199,8 +8195,8 @@ local function SpawnMe(data)
                         ["unitId"]=i,
                         --["livery_id"]="DDG-102_USS_Sampson",
                         ["skill"]=_skill,
-                        ["x"]=data.units[i].x or _wpt[1].x + (i-1)*Ran(100,500),
-                        ["y"]=data.units[i].y or _wpt[1].y + (i-1)*Ran(100,500),
+                        ["x"]=data.units[i].x or _wpt[1].x + (i-1)*MathRan(100,500),
+                        ["y"]=data.units[i].y or _wpt[1].y + (i-1)*MathRan(100,500),
                         ["name"]=_unitName,
                         ["heading"]=data.units[i].heading or _heading*math.pi/180,
                         ["modulation"]=0,
@@ -8286,7 +8282,7 @@ local function SpawnMe(data)
                         local _unitName
                         if #_units+1<=9 then _unitName=_groupName.."-0"..#_units+1 else _unitName=_groupName.."-"..#_units+1 end
                         _units[#_units+1]={
-                            ["alt"]=_initialAlt+Ran(0,5),
+                            ["alt"]=_initialAlt+MathRan(0,5),
                             ["hardpoint_racks"]=true,
                             ["alt_type"]="BARO",
                             ["livery_id"]=_livery,
@@ -8295,8 +8291,8 @@ local function SpawnMe(data)
                             ["type"]=_type,
                             ["unitId"]=#_units+1,
                             ["psi"]=0.099012914880354,
-                            ["x"]=_wpt[1].x + (#_units)*Ran(50,500),
-                            ["y"]=_wpt[1].y + (#_units)*Ran(50,500),
+                            ["x"]=_wpt[1].x + (#_units)*MathRan(50,500),
+                            ["y"]=_wpt[1].y + (#_units)*MathRan(50,500),
                             ["name"]=_unitName,
                             ["payload"]={
                                 ["pylons"]=_pylons,
